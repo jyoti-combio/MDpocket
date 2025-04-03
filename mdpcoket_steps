@@ -1,0 +1,42 @@
+
+############################## Tutorial for MDpocket ############################## 
+
+####### GMX command to fit and separate frames from trajectory ########
+
+gmx trjconv -s md_run1.tpr -f md_run1_noPBC.xtc -fit rot+trans -o run1_fit.pdb -sep
+
+1. POCKET EXPLORATION
+
+## extract frames from MD trajectory into one pdb file. 
+
+## align all the frames (using pymol or VMD)
+
+## split all the frames into separate pdb files. 
+AWK command to separate pdb files (snapshots) from a trajectory (multiple frames in single PDB)
+
+$ grep -n 'MODEL\|ENDMDL' snap.pdb | cut -d: -f 1 |  awk '{if(NR%2) printf "sed -n %d,",$1+1; else printf "%dp snap.pdb > snap_%03d.pdb\n", $1-1,NR/2;}' |  bash -sf (PYMOL)
+
+$ grep -n 'CRYST\|END' snap.pdb | cut -d: -f 1 |  awk '{if(NR%2) printf "sed -n %d,",$1+1; else printf "%dp snap.pdb > snap_%03d.pdb\n", $1-1,NR/2;}' |  bash -sf (VMD)
+
+## python3 createMDPocketInputFile.py  /path/to/snapshots/   mdpocket_input.txt  (this creates a txt file with all snapshort path and names)
+
+## conda activate fpcoket
+
+## mdpocket --pdb_list mdpocket_input.txt --druggability_score
+
+## visualize and analyse both grid and freq .dx files, change the isovalue to visualize the occurance of your pcoket of interest.  
+[in grid.dx: higher isovalue represent more conserved pockets during the MD trajectory]
+[in freq.dx: measure of frequency of how many time the pocket was open during the MD trajectory; higher isovalue means high chance of pocket being present]
+
+## selection of pocket of interest 
+
+mdpout_freq_iso_0_5.pdb file has frequency grid produced at isovalue 0.5
+open this file in pymol.
+select pocket grid of interest (right click on the selected grid>molecule>copytoobject>new
+now save the coordinates of the selelcted grid in a new pdb file as mdpocket_isofreq05.pdb
+
+2. POCKET CHARACTERIZATION 
+
+## mdpocket --pdb_list mdpocket_input.txt --selected_pocket mypocket_isofreq05.pdb -S --druggability_score
+
+output files: mdpout_mdpocket.pdb; dpout_mdpocket_atoms.pdb; mdpout_descritpors.pdb
